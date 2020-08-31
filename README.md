@@ -8,6 +8,8 @@ Metric: Submissions are sended to kaggle and evaluated by Root-Mean-Squared-Erro
 
 Result: RMSE=0.12089
 
-Rank :  22.8% = ( 1034 / 4527 ) 
+Rank :  13.19% = ( 686 / 5200 ) 
 
-https://www.kaggle.com/c/house-prices-advanced-regression-techniques
+The proof of Ranking: https://drive.google.com/file/d/1fsojRdNDv0LAjq1JWqKl_tnEjLSf55w5/view?usp=sharing
+
+Competition web page: https://www.kaggle.com/c/house-prices-advanced-regression-techniques
