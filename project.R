@@ -102,4 +102,4 @@ svm_model<-svm(SalePrice~., data=train, cost = 3)
 svm_pred <- predict(svm_model,newdata = test)
 solution <- data.frame(Id=Id,SalePrice=svm_pred)
 
-write.csv(solution,"team01.csv",row.names = F)
+write.csv(solution,"house_price_prediction.csv",row.names = F)
