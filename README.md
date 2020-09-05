@@ -12,4 +12,6 @@ Rank :  13.19% = ( 686 / 5200 ) 
 
 The proof of Ranking: https://drive.google.com/file/d/1fsojRdNDv0LAjq1JWqKl_tnEjLSf55w5/view?usp=sharing
 
+Presntation File: https://drive.google.com/file/d/10pPtqor1q_vryaEB4yF82BIqGLOAR4Kl/view?usp=sharing
+
 Competition web page: https://www.kaggle.com/c/house-prices-advanced-regression-techniques
