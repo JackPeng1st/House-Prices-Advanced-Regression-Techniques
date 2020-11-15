@@ -6,7 +6,7 @@ Goal: Predict the sales price for each house. For each Id in the test set, predi
 
 Metric: Submissions are sended to kaggle and evaluated by Root-Mean-Squared-Error (RMSE) between the predicted value and the true sales price.          
 
-Result: RMSE=0.12089
+Result: RMSE=0.12089  (R version)
 
 Rank :  13.19% = ( 686 / 5200 ) 
 
