@@ -35,6 +35,17 @@ print(test_data.isnull().sum())
 train_data.drop('Id',1,inplace=True)
 test_data.drop('Id',1,inplace=True)
 
+# A Barplot with the most correlated with the target
+correlations =train_data.corr().abs()['SalePrice'].sort_values(ascending=False)[1:]
+ax = sns.barplot(x=correlations.values,y=correlations.index).set_title('Most Correlated with SalePrice')
+
+high_cor_feature=[]
+for i in range(len(correlations)):
+    if correlations[i]>0.3:
+        high_cor_feature.append(correlations.index[i])
+        
+    
+
 #將目標預測變數分離
 y=train_data['SalePrice'].reset_index(drop=True)
 train_data=train_data.drop(['SalePrice'],axis=1)
@@ -143,15 +154,25 @@ print(missing_feature)
 for feature in col_name:
     if(type(data[feature][1])==str):
         data[feature]=data[feature].astype('category').cat.codes
+        
+#挑重要變數的data
+        
+dataset_high_cor= data[high_cor_feature]      
+
 #將資料標準化 (也可用正規化)
 #scaler.transform(X) 
 #scaler.inverse_transform(scaler.transform(X)) 轉回來
 #要將全部資料一起標準化，還是要將train test 分開呢
+
 scaler=preprocessing.StandardScaler().fit(data)
 data=pd.DataFrame(scaler.transform(data),columns=col_name)
+
 #變回原本正常的  training set和testing set
 training_data=data[0:num_train]
 testing_data=data[num_train:]
+
+training_data_high_cor=dataset_high_cor[0:num_train]
+testing_data_high_cor=dataset_high_cor[num_train:]
 
 #再將training data 切分，做cross validation
 x_train, x_test, y_train, y_test = train_test_split(training_data, y, test_size=0.2, random_state=0)
@@ -179,6 +200,7 @@ def RMSE(target,prediction):
 rmse_svr=RMSE(y_test.values,prediction_svr)
 #np.sqrt(MSE(y_test.values,prediction_svr))
 
+#SVR for all data feature
 svr = SVR(kernel='rbf', C=1e3, gamma=1e-8)
 svr.fit(training_data,y)
 prediction_svr_formal=svr.predict(testing_data)       
@@ -186,7 +208,11 @@ prediction_svr_formal=svr.predict(testing_data)
 final_answer=pd.DataFrame({'Id':Id,'SalePrice':prediction_svr_formal})
 final_answer.to_csv('python_svr_HousePrice.csv',index=False)
         
-        
-        
+# SVR for high cor feature
+svr = SVR(kernel='rbf', C=1e3, gamma=1e-8)
+svr.fit(training_data_high_cor,y)
+prediction_svr_high_cor_formal=svr.predict(testing_data_high_cor)    
+final_answer=pd.DataFrame({'Id':Id,'SalePrice':prediction_svr_high_cor_formal})
+final_answer.to_csv('python_svr_HighCor_HousePrice.csv',index=False)       
         
         
