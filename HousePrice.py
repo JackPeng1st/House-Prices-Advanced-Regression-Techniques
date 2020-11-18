@@ -219,7 +219,16 @@ models = pd.DataFrame({
 models.sort_values(by='RMSE', ascending=True)
 
 #XGB for all data feature
-xgb_r = xgb.XGBRegressor(objective ='reg:linear', n_estimators = 10, seed = 123) 
+xgb_r = xgb.XGBRegressor(colsample_bytree=0.4,
+                 gamma=0,                 
+                 learning_rate=0.07,
+                 max_depth=3,
+                 min_child_weight=1.5,
+                 n_estimators=10000,                                                                    
+                 reg_alpha=0.75,
+                 reg_lambda=0.45,
+                 subsample=0.6,
+                 seed=42) 
 xgb_r.fit(training_data,y)
 prediction_xgb_formal=xgb_r.predict(testing_data)
 
@@ -228,7 +237,7 @@ final_answer.to_csv('python_xgb_HousePrice.csv',index=False)
 
 #XGB for high cor feature
 xgb_r.fit(training_data_high_cor,y)
-prediction_xgb_formal=xgb_r.predict(testing_data)
+prediction_xgb_formal=xgb_r.predict(testing_data_high_cor)
 
 final_answer=pd.DataFrame({'Id':Id,'SalePrice':prediction_xgb_formal})
 final_answer.to_csv('python_xgb_high_cor_HousePrice.csv',index=False)
