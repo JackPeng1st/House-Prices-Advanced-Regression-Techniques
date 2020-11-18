@@ -6,7 +6,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn import metrics, cross_validation
 from sklearn.svm import SVC, LinearSVC
 from sklearn.svm import SVR
-#import xgboost as xgb
+import xgboost as xgb
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.preprocessing import Imputer
@@ -155,24 +155,31 @@ for feature in col_name:
     if(type(data[feature][1])==str):
         data[feature]=data[feature].astype('category').cat.codes
         
-#挑重要變數的data
-        
-dataset_high_cor= data[high_cor_feature]      
-
-#將資料標準化 (也可用正規化)
-#scaler.transform(X) 
-#scaler.inverse_transform(scaler.transform(X)) 轉回來
-#要將全部資料一起標準化，還是要將train test 分開呢
-
-scaler=preprocessing.StandardScaler().fit(data)
-data=pd.DataFrame(scaler.transform(data),columns=col_name)
+#挑重要變數的data    
+#dataset_high_cor= data[high_cor_feature]      
 
 #變回原本正常的  training set和testing set
 training_data=data[0:num_train]
 testing_data=data[num_train:]
 
-training_data_high_cor=dataset_high_cor[0:num_train]
-testing_data_high_cor=dataset_high_cor[num_train:]
+#training_data_high_cor=dataset_high_cor[0:num_train]
+#testing_data_high_cor=dataset_high_cor[num_train:]
+
+
+
+#將資料標準化 .StandardScaler() (也可用正規化 .MinMaxScaler()) 用training data的標準化
+#https://ithelp.ithome.com.tw/articles/10216967?sc=iThelpR
+#scaler.transform(X) 
+#scaler.inverse_transform(scaler.transform(X)) 轉回來
+#要將全部資料一起標準化，還是要將train test 分開呢
+
+scaler=preprocessing.RobustScaler().fit(training_data)
+training_data=pd.DataFrame(scaler.transform(training_data),columns=col_name)
+
+testing_data=pd.DataFrame(scaler.transform(testing_data),columns=col_name)
+#挑重要變數的data 
+training_data_high_cor=training_data[high_cor_feature] 
+testing_data_high_cor=testing_data[high_cor_feature]
 
 #再將training data 切分，做cross validation
 x_train, x_test, y_train, y_test = train_test_split(training_data, y, test_size=0.2, random_state=0)
@@ -182,7 +189,10 @@ svr.fit(x_train,y_train)
 prediction_svr=svr.predict(x_test)
 
 #XG Boost
-#xgb_r = xgb.XGBRegressor(objective ='reg:linear', n_estimators = 10, seed = 123) 
+xgb_r = xgb.XGBRegressor(objective ='reg:linear', n_estimators = 10, seed = 123) 
+
+xgb_r.fit(x_train,y_train)
+prediction_xgb=xgb_r.predict(x_test)
 
 #RMSE function
 def RMSE(target,prediction):
@@ -198,21 +208,44 @@ def RMSE(target,prediction):
 
 
 rmse_svr=RMSE(y_test.values,prediction_svr)
-#np.sqrt(MSE(y_test.values,prediction_svr))
+rmse_xgb=RMSE(y_test.values,prediction_xgb)
+#np.sqrt(MSE(y_test.values,prediction_svr)) #較快算出RMSE的方法
+
+
+models = pd.DataFrame({
+    'Model': ['Support Vector Regression','XGBoost Regression'],
+    'RMSE': [rmse_svr,rmse_xgb]})
+
+models.sort_values(by='RMSE', ascending=True)
+
+#XGB for all data feature
+xgb_r = xgb.XGBRegressor(objective ='reg:linear', n_estimators = 10, seed = 123) 
+xgb_r.fit(training_data,y)
+prediction_xgb_formal=xgb_r.predict(testing_data)
+
+final_answer=pd.DataFrame({'Id':Id,'SalePrice':prediction_xgb_formal})
+final_answer.to_csv('python_xgb_HousePrice.csv',index=False)
+
+#XGB for high cor feature
+xgb_r.fit(training_data_high_cor,y)
+prediction_xgb_formal=xgb_r.predict(testing_data)
+
+final_answer=pd.DataFrame({'Id':Id,'SalePrice':prediction_xgb_formal})
+final_answer.to_csv('python_xgb_high_cor_HousePrice.csv',index=False)
 
 #SVR for all data feature
-svr = SVR(kernel='rbf', C=1e3, gamma=1e-8)
+'''svr = SVR(kernel='rbf', C=1e3, gamma=0.1)
 svr.fit(training_data,y)
 prediction_svr_formal=svr.predict(testing_data)       
         
 final_answer=pd.DataFrame({'Id':Id,'SalePrice':prediction_svr_formal})
-final_answer.to_csv('python_svr_HousePrice.csv',index=False)
+final_answer.to_csv('python_svr_HousePrice.csv',index=False)'''
         
 # SVR for high cor feature
-svr = SVR(kernel='rbf', C=1e3, gamma=1e-8)
+'''svr = SVR(kernel='rbf', C=1e3, gamma=1e-8)
 svr.fit(training_data_high_cor,y)
 prediction_svr_high_cor_formal=svr.predict(testing_data_high_cor)    
 final_answer=pd.DataFrame({'Id':Id,'SalePrice':prediction_svr_high_cor_formal})
-final_answer.to_csv('python_svr_HighCor_HousePrice.csv',index=False)       
+final_answer.to_csv('python_svr_HighCor_HousePrice.csv',index=False)'''      
         
         
