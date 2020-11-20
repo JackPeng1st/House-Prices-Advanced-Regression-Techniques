@@ -15,7 +15,7 @@ from sklearn.model_selection import train_test_split
 from math import sqrt
 import math
 from sklearn.metrics import mean_squared_error as MSE
-from fancyimpute import BiScaler, KNN, NuclearNormMinimization, SoftImpute #用KNN填補空缺值
+from fancyimpute import BiScaler, KNN, NuclearNormMinimization, SoftImpute,IterativeImputer #用KNN填補空缺值
 train_data = pd.read_csv('D:/專題/House Prices Advanced Regression Techniques/train.csv',engine='python')
 test_data = pd.read_csv('D:/專題/House Prices Advanced Regression Techniques/test.csv',engine='python')
 
@@ -104,7 +104,7 @@ for feature in missing_name:
         missing_feature_str.append(feature)
 
 data_2=data.copy()
-#使用KNN填補空缺值
+#使用KNN or MICE 填補空缺值
 for feature in col_name:
     if(type(data_2[feature][0])!=np.float64):
         data_2[feature]=data_2[feature].astype('category').cat.codes
@@ -112,7 +112,9 @@ for feature in col_name:
         if(data_2[feature][i]==-1):
             data_2[feature][i]=None'''
     data_2.loc[data_2[feature]==-1,feature] = None
-data_fill_NA_by_KNN=KNN(k=5).fit_transform(data_2)    
+data_2=KNN(k=5).fit_transform(data_2) 
+'''MICE_imputer = IterativeImputer()
+data_2=MICE_imputer.fit_transform(data_2)'''
 
 #數值型變數用中位數填
 for feature in missing_feature_numpy_float64:
@@ -287,7 +289,7 @@ final_answer=pd.DataFrame({'Id':Id,'SalePrice':prediction_svr_high_cor_formal})
 final_answer.to_csv('python_svr_HighCor_HousePrice.csv',index=False)'''      
         
 ###########################################
-#data filling NA by KNN
+#data filling NA by KNN or MICE
 training_data=data_2[0:num_train]
 testing_data=data_2[num_train:]
 
@@ -308,6 +310,15 @@ xgb_r.fit(training_data,y)
 prediction_xgb_formal=xgb_r.predict(testing_data)
 
 final_answer=pd.DataFrame({'Id':Id,'SalePrice':prediction_xgb_formal})
-final_answer.to_csv('python_xgb_filling_NA_KNN_HousePrice.csv',index=False)
+final_answer.to_csv('python_xgb_filling_NA_knn_HousePrice.csv',index=False)
+
+#RF
+rf_r=RandomForestRegressor(n_estimators = 500 , oob_score = True, random_state = 42)
+rf_r.fit(training_data,y)
+prediction_rf_formal=rf_r.predict(testing_data)
+
+final_answer=pd.DataFrame({'Id':Id,'SalePrice':prediction_rf_formal})
+final_answer.to_csv('python_rf_filling_NA_knn_HousePrice.csv',index=False)
+
 
       
