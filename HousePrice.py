@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.ensemble import RandomForestClassifier,RandomForestRegressor
+from sklearn.ensemble import RandomForestClassifier,RandomForestRegressor,GradientBoostingRegressor
 from sklearn import metrics
 from sklearn.svm import SVC, LinearSVC
 from sklearn.svm import SVR
@@ -214,6 +214,11 @@ rf_r=RandomForestRegressor(n_estimators = 100 , oob_score = True, random_state =
 rf_r.fit(x_train,y_train)
 prediction_rf=rf_r.predict(x_test)
 
+#GradientBoostingRegressor
+GB_R = GradientBoostingRegressor(random_state=0)
+GB_R.fit(x_train, y_train)
+prediction_GB_R=GB_R.predict(x_test)
+
 #RMSE function
 def RMSE(target,prediction):
     error = []
@@ -230,12 +235,13 @@ def RMSE(target,prediction):
 rmse_svr=RMSE(y_test.values,prediction_svr)
 rmse_xgb=RMSE(y_test.values,prediction_xgb)
 rmse_rf=RMSE(y_test.values,prediction_rf)
+rmse_GB_R=RMSE(y_test.values,prediction_GB_R)
 #np.sqrt(MSE(y_test.values,prediction_svr)) #較快算出RMSE的方法
 
 
 models = pd.DataFrame({
-    'Model': ['Support Vector Regression','XGBoost Regression','Random Forest Regression'],
-    'RMSE': [rmse_svr,rmse_xgb,rmse_rf]
+    'Model': ['Support Vector Regression','XGBoost Regression','Random Forest Regression','Gradient Boosting Regressor'],
+    'RMSE': [rmse_svr,rmse_xgb,rmse_rf,rmse_GB_R]
     })
 
 models.sort_values(by='RMSE', ascending=True)
@@ -265,12 +271,12 @@ final_answer=pd.DataFrame({'Id':Id,'SalePrice':prediction_xgb_formal})
 final_answer.to_csv('python_xgb_high_cor_HousePrice.csv',index=False)'''
 
 #Random Forest for all data feature
-rf_r=RandomForestRegressor(n_estimators = 100 , oob_score = True, random_state = 42)
+'''rf_r=RandomForestRegressor(n_estimators = 100 , oob_score = True, random_state = 42)
 rf_r.fit(training_data,y)
 prediction_rf_formal=rf_r.predict(testing_data)
 
 final_answer=pd.DataFrame({'Id':Id,'SalePrice':prediction_rf_formal})
-final_answer.to_csv('python_rf_HousePrice.csv',index=False)
+final_answer.to_csv('python_rf_HousePrice.csv',index=False)'''
 
 
 #SVR for all data feature
@@ -286,8 +292,15 @@ final_answer.to_csv('python_svr_HousePrice.csv',index=False)'''
 svr.fit(training_data_high_cor,y)
 prediction_svr_high_cor_formal=svr.predict(testing_data_high_cor)    
 final_answer=pd.DataFrame({'Id':Id,'SalePrice':prediction_svr_high_cor_formal})
-final_answer.to_csv('python_svr_HighCor_HousePrice.csv',index=False)'''      
+final_answer.to_csv('python_svr_HighCor_HousePrice.csv',index=False)'''    
+
+#Gradient Boosting
+GB_R = GradientBoostingRegressor(random_state=0)
+GB_R.fit(training_data,y)
+prediction_GB_R_formal=GB_R.predict(testing_data)  
         
+final_answer=pd.DataFrame({'Id':Id,'SalePrice':prediction_GB_R_formal})
+final_answer.to_csv('python_GB_R_HousePrice.csv',index=False)
 ###########################################
 #data filling NA by KNN or MICE
 training_data=data_2[0:num_train]
@@ -320,5 +333,11 @@ prediction_rf_formal=rf_r.predict(testing_data)
 final_answer=pd.DataFrame({'Id':Id,'SalePrice':prediction_rf_formal})
 final_answer.to_csv('python_rf_filling_NA_knn_HousePrice.csv',index=False)
 
-
+#Gradient Boosting
+GB_R = GradientBoostingRegressor(random_state=0)
+GB_R.fit(training_data,y)
+prediction_GB_R_formal=GB_R.predict(testing_data)  
+        
+final_answer=pd.DataFrame({'Id':Id,'SalePrice':prediction_GB_R_formal})
+final_answer.to_csv('python_GB_R_HousePrice.csv',index=False)
       
