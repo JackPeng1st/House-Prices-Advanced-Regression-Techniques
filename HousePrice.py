@@ -291,6 +291,9 @@ final_answer.to_csv('python_svr_HighCor_HousePrice.csv',index=False)'''
 training_data=data_2[0:num_train]
 testing_data=data_2[num_train:]
 
+#training_data=training_data[high_cor_feature]
+#testing_data=testing_data[high_cor_feature]
+
 xgb_r = xgb.XGBRegressor(colsample_bytree=0.4,
                  gamma=0,                 
                  learning_rate=0.07,
