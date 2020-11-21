@@ -243,6 +243,17 @@ lasso = Lasso(alpha=1.0)
 lasso.fit(x_train, y_train)
 prediction_lasso_R=lasso.predict(x_test)
 
+#LightGBM Regressor
+model_lgb = lgb.LGBMRegressor(objective='regression',num_leaves=5,
+                              learning_rate=0.05, n_estimators=720,
+                              max_bin = 55, bagging_fraction = 0.8,
+                              bagging_freq = 5, feature_fraction = 0.2319,
+                              feature_fraction_seed=9, bagging_seed=9,
+                              min_data_in_leaf =6, min_sum_hessian_in_leaf = 11)
+model_lgb.fit(x_train, y_train)
+prediction_lgb_R=model_lgb.predict(x_test)
+
+
 #RMSE function
 def RMSE(target,prediction):
     error = []
@@ -262,14 +273,15 @@ rmse_rf=RMSE(y_test.values,prediction_rf)
 rmse_GB_R=RMSE(y_test.values,prediction_GB_R)
 rmse_ridge_R=RMSE(y_test.values,prediction_ridge_R)
 rmse_lasso_R=RMSE(y_test.values,prediction_lasso_R)
+rmse_lgb_R=RMSE(y_test.values,prediction_lgb_R)
 #np.sqrt(MSE(y_test.values,prediction_svr)) #較快算出RMSE的方法
 
 
 models = pd.DataFrame({
     'Model': ['Support Vector Regression','XGBoost Regression',
               'Random Forest Regression','Gradient Boosting Regressor',
-              'Ridge Regression','Lasso Regression'],
-    'RMSE': [rmse_svr,rmse_xgb,rmse_rf,rmse_GB_R,rmse_ridge_R,rmse_lasso_R]
+              'Ridge Regression','Lasso Regression','LightGBM Regressor'],
+    'RMSE': [rmse_svr,rmse_xgb,rmse_rf,rmse_GB_R,rmse_ridge_R,rmse_lasso_R,rmse_lgb_R]
     })
 
 models.sort_values(by='RMSE', ascending=True)
@@ -349,6 +361,14 @@ xgb_r = xgb.XGBRegressor(colsample_bytree=0.4,
                  reg_lambda=0.45,
                  subsample=0.6,
                  seed=42) 
+
+'''xgb_r=xgb.XGBRegressor(colsample_bytree=0.4603, gamma=0.0468, 
+                             learning_rate=0.05, max_depth=3, 
+                             min_child_weight=1.7817, n_estimators=2200,
+                             reg_alpha=0.4640, reg_lambda=0.8571,
+                             subsample=0.5213, silent=1,
+                             random_state =7, nthread = -1)'''
+
 xgb_r.fit(training_data,y)
 prediction_xgb_formal=xgb_r.predict(testing_data)
 
@@ -408,3 +428,10 @@ prediction_xgb_formal=xgb_r.predict(testing_data)
 final_answer=pd.DataFrame({'Id':Id,'SalePrice':prediction_xgb_formal})
 final_answer.to_csv('python_xgb_filling_NA_knn_HousePrice.csv',index=False)
 
+
+
+
+
+
+
+   
