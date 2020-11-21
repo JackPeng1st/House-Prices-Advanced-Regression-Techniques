@@ -51,6 +51,19 @@ y=train_data['SalePrice'].reset_index(drop=True)
 train_data=train_data.drop(['SalePrice'],axis=1)
 #combine all data to deal with NAs
 data=pd.concat([train_data,test_data],ignore_index=True)
+
+#################################################填補所有資料的空缺值(不刪NA值超過60%的變數)
+data_all=data.copy()
+col_name_all=data_all.columns.values.tolist() 
+for feature in col_name_all:
+    if(type(data_all[feature][0])!=np.float64):
+        data_all[feature]=data_all[feature].astype('category').cat.codes
+    '''for i in range(len(data_2[feature])):
+        if(data_2[feature][i]==-1):
+            data_2[feature][i]=None'''
+    data_all.loc[data_all[feature]==-1,feature] = None
+data_all=KNN(k=5).fit_transform(data_all) 
+###################################################3
 #看缺失變數的缺失程度
 def missing_percentage(df):
     
@@ -75,7 +88,7 @@ plt.xticks(rotation=90)# 使x軸文字不重疊，變垂直
 col_name=data.columns.values.tolist() 
 #取missing value 
 missing_name=missing_feature.index.tolist()
-
+######################################################
 #刪掉缺失值>60%的變數
 for feature in missing_name:
     if(missing_feature['Percent'][feature]>60):
@@ -83,7 +96,7 @@ for feature in missing_name:
 
 col_name=data.columns.values.tolist() 
 missing_feature=missing_percentage(data)
-#刪掉缺失值>60%的變數之作圖
+########################################################刪掉缺失值>60%的變數之作圖
 fig, ax = plt.subplots(figsize=(20, 5))
 sns.barplot(x=missing_feature.index, y='Percent', data=missing_feature, palette='Reds_r')
 plt.xticks(rotation=90)
@@ -91,7 +104,7 @@ display(missing_feature.T.style.background_gradient(cmap='Reds', axis=1))
 
 missing_name=missing_feature.index.tolist()
 
-#區分個變數的型態
+#########################################################區分個變數的型態
 for feature in missing_name:
     print(type(data[feature][1]))
 #正式分離各個變數型態
@@ -102,7 +115,7 @@ for feature in missing_name:
         missing_feature_numpy_float64.append(feature)
     elif(type(data[feature][1])==str):
         missing_feature_str.append(feature)
-
+############################################################
 data_2=data.copy()
 #使用KNN or MICE 填補空缺值
 for feature in col_name:
@@ -115,7 +128,7 @@ for feature in col_name:
 data_2=KNN(k=5).fit_transform(data_2) 
 '''MICE_imputer = IterativeImputer()
 data_2=MICE_imputer.fit_transform(data_2)'''
-
+##############################################################
 #數值型變數用中位數填
 for feature in missing_feature_numpy_float64:
     data[feature]=data[feature].fillna(data[feature].median())
@@ -168,7 +181,7 @@ print(missing_feature)
 for feature in col_name:
     if(type(data[feature][1])==str):
         data[feature]=data[feature].astype('category').cat.codes
-        
+###################################################################################       
 #挑重要變數的data    
 #dataset_high_cor= data[high_cor_feature]      
 
@@ -186,7 +199,6 @@ testing_data=data[num_train:]
 #scaler.transform(X) 
 #scaler.inverse_transform(scaler.transform(X)) 轉回來
 #要將全部資料一起標準化，還是要將train test 分開呢
-
 scaler=preprocessing.RobustScaler().fit(training_data)
 training_data=pd.DataFrame(scaler.transform(training_data),columns=col_name)
 
@@ -195,7 +207,7 @@ testing_data=pd.DataFrame(scaler.transform(testing_data),columns=col_name)
 training_data_high_cor=training_data[high_cor_feature] 
 testing_data_high_cor=testing_data[high_cor_feature]
 
-#再將training data 切分，做cross validation
+############################################再將training data 切分，做cross validation
 x_train, x_test, y_train, y_test = train_test_split(training_data, y, test_size=0.2, random_state=0)
 # logistic regression
 svr = SVR(kernel='rbf', C=1e3, gamma=0.1)
@@ -245,7 +257,8 @@ models = pd.DataFrame({
     })
 
 models.sort_values(by='RMSE', ascending=True)
-
+####################################################################
+#formal modeling 
 #XGB for all data feature
 '''xgb_r = xgb.XGBRegressor(colsample_bytree=0.4,
                  gamma=0,                 
@@ -260,7 +273,7 @@ models.sort_values(by='RMSE', ascending=True)
 xgb_r.fit(training_data,y)
 prediction_xgb_formal=xgb_r.predict(testing_data)
 
-final_answer=pd.DataFrame({'Id':Id,'SalePrice':prediction_xgb_formal})
+final_answer=pd.DataFrame({'Iˇd':Id,'SalePrice':prediction_xgb_formal})
 final_answer.to_csv('python_xgb_HousePrice.csv',index=False)
 
 #XGB for high cor feature
@@ -301,8 +314,9 @@ prediction_GB_R_formal=GB_R.predict(testing_data)
         
 final_answer=pd.DataFrame({'Id':Id,'SalePrice':prediction_GB_R_formal})
 final_answer.to_csv('python_GB_R_HousePrice.csv',index=False)
-###########################################
-#data filling NA by KNN or MICE
+############################################################################
+#data_2 (挑選變數NA值不超過60%) filling NA by KNN or MICE
+#目前表現最佳為KNN補data_2的NA值，再以XGB Modeling
 training_data=data_2[0:num_train]
 testing_data=data_2[num_train:]
 
@@ -340,4 +354,27 @@ prediction_GB_R_formal=GB_R.predict(testing_data)
         
 final_answer=pd.DataFrame({'Id':Id,'SalePrice':prediction_GB_R_formal})
 final_answer.to_csv('python_GB_R_HousePrice.csv',index=False)
-      
+############################################################################# 
+#data_all (挑選所有變數) filling NA by KNN or MICE
+training_data=data_all[0:num_train]
+testing_data=data_all[num_train:]
+
+#training_data=training_data[high_cor_feature]
+#testing_data=testing_data[high_cor_feature]
+
+xgb_r = xgb.XGBRegressor(colsample_bytree=0.4,
+                 gamma=0,                 
+                 learning_rate=0.07,
+                 max_depth=3,
+                 min_child_weight=1.5,
+                 n_estimators=10000,                                                                    
+                 reg_alpha=0.75,
+                 reg_lambda=0.45,
+                 subsample=0.6,
+                 seed=42) 
+xgb_r.fit(training_data,y)
+prediction_xgb_formal=xgb_r.predict(testing_data)
+
+final_answer=pd.DataFrame({'Id':Id,'SalePrice':prediction_xgb_formal})
+final_answer.to_csv('python_xgb_filling_NA_knn_HousePrice.csv',index=False)
+
