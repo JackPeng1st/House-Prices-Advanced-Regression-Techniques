@@ -16,6 +16,7 @@ from sklearn.linear_model import Ridge,Lasso
 from math import sqrt
 import math
 from sklearn.metrics import mean_squared_error as MSE
+import lightgbm as lgb
 from fancyimpute import BiScaler, KNN, NuclearNormMinimization, SoftImpute,IterativeImputer #用KNN填補空缺值
 train_data = pd.read_csv('D:/專題/House Prices Advanced Regression Techniques/train.csv',engine='python')
 test_data = pd.read_csv('D:/專題/House Prices Advanced Regression Techniques/test.csv',engine='python')
@@ -369,6 +370,20 @@ prediction_GB_R_formal=GB_R.predict(testing_data)
         
 final_answer=pd.DataFrame({'Id':Id,'SalePrice':prediction_GB_R_formal})
 final_answer.to_csv('python_GB_R_HousePrice.csv',index=False)
+
+#LightGBM Regressor
+model_lgb = lgb.LGBMRegressor(objective='regression',num_leaves=5,
+                              learning_rate=0.05, n_estimators=720,
+                              max_bin = 55, bagging_fraction = 0.8,
+                              bagging_freq = 5, feature_fraction = 0.2319,
+                              feature_fraction_seed=9, bagging_seed=9,
+                              min_data_in_leaf =6, min_sum_hessian_in_leaf = 11)
+
+model_lgb.fit(training_data,y)
+prediction_lgb_R_formal=model_lgb.predict(testing_data)  
+
+final_answer=pd.DataFrame({'Id':Id,'SalePrice':prediction_lgb_R_formal})
+final_answer.to_csv('python_lgb_R_HousePrice.csv',index=False)
 ############################################################################# 
 #data_all (挑選所有變數) filling NA by KNN or MICE
 training_data=data_all[0:num_train]
@@ -392,3 +407,4 @@ prediction_xgb_formal=xgb_r.predict(testing_data)
 
 final_answer=pd.DataFrame({'Id':Id,'SalePrice':prediction_xgb_formal})
 final_answer.to_csv('python_xgb_filling_NA_knn_HousePrice.csv',index=False)
+
