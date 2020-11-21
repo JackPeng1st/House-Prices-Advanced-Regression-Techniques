@@ -12,6 +12,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn import preprocessing 
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
+from sklearn.linear_model import Ridge,Lasso
 from math import sqrt
 import math
 from sklearn.metrics import mean_squared_error as MSE
@@ -231,6 +232,16 @@ GB_R = GradientBoostingRegressor(random_state=0)
 GB_R.fit(x_train, y_train)
 prediction_GB_R=GB_R.predict(x_test)
 
+#Ridge Regression
+ridge = Ridge(alpha=1.0)
+ridge.fit(x_train, y_train)
+prediction_ridge_R=ridge.predict(x_test)
+
+#Lasso Regression
+lasso = Lasso(alpha=1.0)
+lasso.fit(x_train, y_train)
+prediction_lasso_R=lasso.predict(x_test)
+
 #RMSE function
 def RMSE(target,prediction):
     error = []
@@ -248,12 +259,16 @@ rmse_svr=RMSE(y_test.values,prediction_svr)
 rmse_xgb=RMSE(y_test.values,prediction_xgb)
 rmse_rf=RMSE(y_test.values,prediction_rf)
 rmse_GB_R=RMSE(y_test.values,prediction_GB_R)
+rmse_ridge_R=RMSE(y_test.values,prediction_ridge_R)
+rmse_lasso_R=RMSE(y_test.values,prediction_lasso_R)
 #np.sqrt(MSE(y_test.values,prediction_svr)) #較快算出RMSE的方法
 
 
 models = pd.DataFrame({
-    'Model': ['Support Vector Regression','XGBoost Regression','Random Forest Regression','Gradient Boosting Regressor'],
-    'RMSE': [rmse_svr,rmse_xgb,rmse_rf,rmse_GB_R]
+    'Model': ['Support Vector Regression','XGBoost Regression',
+              'Random Forest Regression','Gradient Boosting Regressor',
+              'Ridge Regression','Lasso Regression'],
+    'RMSE': [rmse_svr,rmse_xgb,rmse_rf,rmse_GB_R,rmse_ridge_R,rmse_lasso_R]
     })
 
 models.sort_values(by='RMSE', ascending=True)
@@ -377,4 +392,3 @@ prediction_xgb_formal=xgb_r.predict(testing_data)
 
 final_answer=pd.DataFrame({'Id':Id,'SalePrice':prediction_xgb_formal})
 final_answer.to_csv('python_xgb_filling_NA_knn_HousePrice.csv',index=False)
-
