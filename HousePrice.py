@@ -128,6 +128,8 @@ for feature in col_name:
             data_2[feature][i]=None'''
     data_2.loc[data_2[feature]==-1,feature] = None
 data_2=KNN(k=5).fit_transform(data_2) 
+
+#執行完直接跳到348行
 '''MICE_imputer = IterativeImputer()
 data_2=MICE_imputer.fit_transform(data_2)'''
 ##############################################################
@@ -378,6 +380,28 @@ final_answer.to_csv('python_xgb_filling_NA_knn_HousePrice.csv',index=False)
 #RF
 rf_r=RandomForestRegressor(n_estimators = 500 , oob_score = True, random_state = 42)
 rf_r.fit(training_data,y)
+
+#importance of feature 
+# random forest function
+'''importances = rf_r.feature_importances_
+std = np.std([tree.feature_importances_ for tree in rf_r.estimators_],
+             axis=0)
+indices = np.argsort(importances)[::-1]
+
+# Print the feature ranking
+print("Feature ranking:")
+for f in range(training_data.shape[1]):
+    print("%d. feature %d (%f)" % (f + 1, indices[f], importances[indices[f]]))
+    
+plt.figure()
+plt.title("Feature importances")
+plt.bar(range(training_data.shape[1]), importances[indices],
+        color="r", yerr=std[indices], align="center")
+plt.xticks(range(training_data.shape[1]), indices)
+plt.xlim([-1, training_data.shape[1]])
+plt.show()'''
+
+
 prediction_rf_formal=rf_r.predict(testing_data)
 
 final_answer=pd.DataFrame({'Id':Id,'SalePrice':prediction_rf_formal})
@@ -427,11 +451,3 @@ prediction_xgb_formal=xgb_r.predict(testing_data)
 
 final_answer=pd.DataFrame({'Id':Id,'SalePrice':prediction_xgb_formal})
 final_answer.to_csv('python_xgb_filling_NA_knn_HousePrice.csv',index=False)
-
-
-
-
-
-
-
-   
