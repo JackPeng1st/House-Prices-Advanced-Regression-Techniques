@@ -1,5 +1,3 @@
-國立交通大學 (NCTU) 彭家祐
-
 Data: 79 Variables (such as OverallQual, Neighborhood, TotalBsmtSF (Basement Square Foot), HouseStyle(How many stories, finished/unfinished), etc…
 
 Goal: Predict the sales price for each house. For each Id in the test set, predict the value of the SalePrice variable. 
